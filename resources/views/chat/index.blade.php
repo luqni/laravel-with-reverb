@@ -44,7 +44,10 @@
             <div class="flex {{ $message->sender_id === Auth::id() ? 'justify-end' : 'justify-start' }}">
                 <div class="message-bubble {{ $message->sender_id === Auth::id() ? 'message-sent bg-whatsapp-light' : 'message-received bg-white' }} rounded-lg p-3 shadow-sm">
                     @if($message->sender_id !== Auth::id())
-                        <p class="text-xs font-medium text-whatsapp-dark mb-1">{{ $message->sender->name }}</p>
+                        <div class="flex items-center gap-1 mb-1">
+                            <p class="text-xs font-medium text-whatsapp-dark">{{ $message->sender->name }}</p>
+                            <div class="w-2 h-2 rounded-full {{ $message->sender->is_online ? 'bg-green-500' : 'bg-gray-400' }}"></div>
+                        </div>
                     @endif
                     <div class="{{ $message->is_emoji ? 'emoji-message' : 'text-gray-800' }}">
                         {{ $message->content }}
@@ -165,10 +168,18 @@
 
     // WebSocket connection
     window.Echo.private('chat')
-        .listen('NewChatMessage', (e) => {
+        .listen('ChatMessageEvent', (e) => {
             if (!e.message.receiver_id) {
                 appendMessage(e.message);
             }
+        });
+
+    window.Echo.channel('users.online')
+        .listen('UserOnlineEvent', (e) => {
+            const userStatusDots = document.querySelectorAll(`[data-user-id="${e.user_id}"]`);
+            userStatusDots.forEach(dot => {
+                dot.className = `w-2 h-2 rounded-full ${e.is_online ? 'bg-green-500' : 'bg-gray-400'}`;
+            });
         });
 </script>
 @endsection

@@ -69,6 +69,17 @@
 
         <!-- Sidebar -->
         <div id="sidebar" class="fixed md:relative w-full md:w-80 bg-white border-r border-gray-200 flex flex-col h-full transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-20">
+            
+            <!-- Tombol Close (X) hanya di mobile -->
+            <div class="absolute top-4 right-4 md:hidden">
+                <button id="sidebarCloseToggle" class="text-gray-700 hover:text-black focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
             <div class="flex-none p-4 border-b border-gray-200 mt-12 md:mt-0">
                 <a href="{{ route('profile.show') }}" class="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2">
                     @if(Auth::user()->profile_picture)
@@ -83,9 +94,21 @@
                         <p class="text-xs text-gray-500">Lihat profil</p>
                     </div>
                 </a>
+                <form action="{{ route('logout') }}" method="POST" class="mt-2">
+                    @csrf
+                    <button type="submit" class="w-full flex items-center space-x-2 text-red-600 hover:bg-red-50 rounded-lg p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span class="text-sm font-medium">Logout</span>
+                    </button>
+                </form>
             </div>
+
             @yield('sidebar')
         </div>
+
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col bg-whatsapp-chat mt-12 md:mt-0">
@@ -102,15 +125,10 @@
             sidebar.classList.toggle('-translate-x-full');
         });
 
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            
-            if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target) && window.innerWidth < 768) {
-                sidebar.classList.add('-translate-x-full');
-            }
+        document.getElementById('sidebarCloseToggle').addEventListener('click', function() {
+            sidebar.classList.add('-translate-x-full');
         });
+
     </script>
     @yield('scripts')
 </body>

@@ -17,13 +17,18 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
-
+        
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            $user = User::where('email', $request['email'])->first();
+            if ($user) {
+                $user->update(['is_online' => true]);
+            }
             return redirect()->route('chat.index');
         }
 
@@ -58,10 +63,15 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $user = Auth::user();
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        if ($user) {
+            $user->update(['is_online' => false]);
+        }
 
         return redirect('/');
     }

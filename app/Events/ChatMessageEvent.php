@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -11,15 +10,17 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NewChatMessage implements ShouldBroadcast
+class ChatMessageEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $message;
+    public $user;
 
-    public function __construct(Message $message)
+    public function __construct($message, $user)
     {
         $this->message = $message;
+        $this->user = $user;
     }
 
     public function broadcastOn()
@@ -27,17 +28,17 @@ class NewChatMessage implements ShouldBroadcast
         return new Channel('chat');
     }
 
+    public function broadcastAs()
+    {
+        return 'message';
+    }
+
     public function broadcastWith()
     {
         return [
-            'id' => $this->message->id,
-            'content' => $this->message->content,
-            'is_emoji' => $this->message->is_emoji,
-            'created_at' => $this->message->created_at,
-            'sender' => [
-                'id' => $this->message->sender->id,
-                'name' => $this->message->sender->name
-            ]
+            'message' => $this->message,
+            'user' => $this->user,
+            'time' => now()->format('H:i')
         ];
     }
 }

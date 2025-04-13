@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\User;
-use App\Events\NewChatMessage;
+use App\Events\ChatMessageEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,30 +63,23 @@ class ChatController extends Controller
         return view('chat.private', compact('messages', 'user'));
     }
 
-    public function sendMessage(Request $request): JsonResponse
+    public function sendMessage(Request $request, User $user = null): JsonResponse
     {
         $request->validate([
-            'content' => 'required|string',
-            'is_emoji' => 'required|boolean',
-            'receiver_id' => 'nullable|exists:users,id'
+            'content' => 'required|string'
         ]);
 
         $message = Message::create([
             'sender_id' => Auth::id(),
-            'receiver_id' => $request->receiver_id,
-            'content' => $request->content,
-            'is_emoji' => $request->is_emoji
+            'receiver_id' => $user?->id,
+            'content' => $request->get('content')
         ]);
 
-        $message->load(['sender', 'receiver']);
+        broadcast(new ChatMessageEvent($message->content, $message->sender))->toOthers();
 
-        if ($request->receiver_id) {
-            broadcast(new NewChatMessage($message))->toOthers();
-        } else {
-            broadcast(new NewChatMessage($message))->toOthers();
-        }
-
-        return response()->json($message);
+        return response()->json([
+            'message' => $message->load(['sender', 'receiver'])
+        ]);
     }
 
     public function getMessages(Request $request): JsonResponse

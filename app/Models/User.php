@@ -25,6 +25,7 @@ class User extends Authenticatable
         'phone',
         'status',
         'profile_picture',
+        'is_online',
     ];
 
     /**
